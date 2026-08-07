@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perdón 🥺</title>
+<style>
+  :root{
+    --pink-bg-1: #ffd6e8;
+    --pink-bg-2: #ffb6d9;
+    --pink-deep: #ff8fc4;
+    --pink-dark: #d6478f;
+    --white-soft: #fff5fa;
+    --text-dark: #6b2247;
+    --yes-color: #ff6fa8;
+    --yes-color-hover: #ff4f95;
+    --no-color: #ffe0ee;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family: 'Segoe UI', Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--pink-bg-1), var(--pink-bg-2));
+    overflow:hidden;
+    position:relative;
+  }
+
+  /* corazones flotando de fondo */
+  .heart{
+    position:fixed;
+    top:-10%;
+    font-size:24px;
+    opacity:0.5;
+    animation: fall linear infinite;
+    pointer-events:none;
+    user-select:none;
+    z-index:0;
+  }
+  @keyframes fall{
+    0%{ transform: translateY(0) rotate(0deg); }
+    100%{ transform: translateY(110vh) rotate(360deg); }
+  }
+
+  .card{
+    position:relative;
+    z-index:1;
+    background: var(--white-soft);
+    border-radius: 30px;
+    padding: 40px 35px;
+    max-width: 420px;
+    width: 90%;
+    text-align:center;
+    box-shadow: 0 20px 50px rgba(214, 71, 143, 0.35);
+    border: 3px solid var(--pink-deep);
+    animation: popIn 0.5s ease;
+  }
+  @keyframes popIn{
+    0%{ transform: scale(0.8); opacity:0; }
+    100%{ transform: scale(1); opacity:1; }
+  }
+
+  .sad-face{
+    width: 160px;
+    height: 160px;
+    margin: 0 auto 15px auto;
+    display:block;
+    object-fit: cover;
+    object-position: center 25%;
+    border-radius: 50%;
+    border: 4px solid var(--pink-deep);
+    box-shadow: 0 8px 20px rgba(214, 71, 143, 0.3);
+  }
+
+  h1{
+    color: var(--text-dark);
+    font-size: 1.6em;
+    margin: 10px 0 25px 0;
+  }
+
+  .btns{
+    display:flex;
+    gap: 18px;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+    height: 60px;
+  }
+
+  button{
+    padding: 12px 30px;
+    font-size: 1.05em;
+    font-weight:bold;
+    border:none;
+    border-radius: 50px;
+    cursor:pointer;
+    transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .btn-yes{
+    background: var(--yes-color);
+    color:white;
+    box-shadow: 0 6px 15px rgba(255,111,168,0.5);
+  }
+  .btn-yes:hover{
+    background: var(--yes-color-hover);
+    transform: scale(1.08);
+  }
+
+  .btn-no{
+    background: var(--no-color);
+    color: var(--pink-dark);
+    border: 2px solid var(--pink-deep);
+    position: relative;
+  }
+  .btn-no.dodging{
+    position: fixed;
+  }
+
+  .fade-out{
+    animation: fadeOut 0.35s ease forwards;
+  }
+  @keyframes fadeOut{
+    to{ opacity:0; transform: scale(0.5) rotate(15deg); }
+  }
+
+  .final-message{
+    font-size: 1.8em;
+    color: var(--pink-dark);
+    font-weight:bold;
+    animation: popIn 0.5s ease;
+  }
+
+  .subtitle{
+    color: var(--text-dark);
+    font-size: 0.95em;
+    margin-top: 8px;
+    opacity:0.8;
+  }
+
+  .hint{
+    font-size: 0.85em;
+    color: var(--pink-dark);
+    margin-top: 18px;
+    opacity: 0.7;
+  }
+</style>
+</head>
+<body>
+
+<div class="card" id="card">
+  <img class="sad-face" id="sadFace" src="sad.jpe" alt="foto triste">
+
+  <h1 id="question">¿Me perdonas? 🥺💗</h1>
+
+  <div class="btns" id="btnContainer">
+    <button class="btn-yes" id="btnYes">Sí</button>
+    <button class="btn-no" id="btnNo">No</button>
+  </div>
+
+  <p class="hint" id="hint">haz clic con cariño 💕</p>
+</div>
+
+<script>
+  const card = document.getElementById('card');
+  const question = document.getElementById('question');
+  const btnContainer = document.getElementById('btnContainer');
+  const btnYes = document.getElementById('btnYes');
+  const btnNo = document.getElementById('btnNo');
+  const hint = document.getElementById('hint');
+  const sadFace = document.getElementById('sadFace');
+
+  let stage = 1; // 1 = pregunta "me perdonas", 2 = "otra oportunidad"
+
+  // Corazones de fondo decorativos
+  const heartsEmoji = ['💗','💕','🩷','💖','🌸'];
+  for(let i=0; i<18; i++){
+    const h = document.createElement('div');
+    h.className = 'heart';
+    h.textContent = heartsEmoji[Math.floor(Math.random()*heartsEmoji.length)];
+    h.style.left = Math.random()*100 + 'vw';
+    h.style.animationDuration = (6 + Math.random()*8) + 's';
+    h.style.animationDelay = (Math.random()*8) + 's';
+    h.style.fontSize = (14 + Math.random()*18) + 'px';
+    document.body.appendChild(h);
+  }
+
+  // Botón "No" de la primera pregunta: al hacer clic, desaparece y solo queda "Sí"
+  btnNo.addEventListener('click', () => {
+    if(stage === 1){
+      btnNo.classList.add('fade-out');
+      setTimeout(() => { btnNo.style.display = 'none'; }, 300);
+      hint.textContent = 'creo que solo queda una opción... 👉';
+    } else if(stage === 2){
+      dodgeButton();
+    }
+  });
+
+  // Botón "Sí"
+  btnYes.addEventListener('click', () => {
+    if(stage === 1){
+      goToStageTwo();
+    } else if(stage === 2){
+      showFinalMessage();
+    }
+  });
+
+  function goToStageTwo(){
+    stage = 2;
+    question.textContent = '¿Me darías otra oportunidad? 🥹✨';
+    hint.textContent = 'el "no" ahora tiene miedito y se escapa 😳';
+    btnNo.style.display = 'inline-block';
+    btnNo.classList.remove('fade-out');
+    btnNo.style.opacity = '1';
+    btnNo.style.transform = '';
+    btnNo.style.position = 'relative';
+    btnNo.style.left = '';
+    btnNo.style.top = '';
+    btnNo.classList.remove('dodging');
+
+    // (si tienes otra foto para esta etapa, aquí puedes hacer sadFace.src = 'otra.jpg';)
+  }
+
+  // Hace que el botón "No" cambie de lugar, pero solo un poco (cerca de donde está)
+  function dodgeButton(){
+    btnNo.classList.add('dodging');
+    const rect = btnNo.getBoundingClientRect();
+    const moveRange = 90; // distancia máxima de movimiento en px
+    const margin = 20;
+
+    let newX = rect.left + (Math.random() * moveRange * 2 - moveRange);
+    let newY = rect.top + (Math.random() * moveRange * 2 - moveRange);
+
+    // que no se salga de la pantalla
+    newX = Math.max(margin, Math.min(newX, window.innerWidth - rect.width - margin));
+    newY = Math.max(margin, Math.min(newY, window.innerHeight - rect.height - margin));
+
+    btnNo.style.left = newX + 'px';
+    btnNo.style.top = newY + 'px';
+  }
+
+  // También esquiva si el mouse (o el dedo) se acerca demasiado (más juguetón)
+  function checkNearby(x, y){
+    if(stage !== 2) return;
+    const rect = btnNo.getBoundingClientRect();
+    const btnCenterX = rect.left + rect.width/2;
+    const btnCenterY = rect.top + rect.height/2;
+    const dist = Math.hypot(x - btnCenterX, y - btnCenterY);
+    if(dist < 70){
+      dodgeButton();
+    }
+  }
+
+  document.addEventListener('mousemove', (e) => {
+    checkNearby(e.clientX, e.clientY);
+  });
+
+  // Soporte táctil para móvil: el dedo también hace que el botón escape
+  document.addEventListener('touchmove', (e) => {
+    if(stage !== 2) return;
+    const touch = e.touches[0];
+    if(touch) checkNearby(touch.clientX, touch.clientY);
+  }, { passive: true });
+
+  document.addEventListener('touchstart', (e) => {
+    if(stage !== 2) return;
+    const touch = e.touches[0];
+    if(touch) checkNearby(touch.clientX, touch.clientY);
+  }, { passive: true });
+
+  function showFinalMessage(){
+    card.innerHTML = `
+      <div class="final-message">¡Yei! 🎉💗</div>
+      <p class="subtitle">gracias por darme otra oportunidad, prometo cuidarla 🥰</p>
+    `;
+  }
+</script>
+
+</body>
+</html>
